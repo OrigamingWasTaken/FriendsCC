@@ -17,6 +17,9 @@ term.setTextColor(colors.white)
 print("Relay: " .. (config.get("relayUrl") or "not set"))
 print("Output: " .. (config.get("outputInv") or "not set"))
 print("")
+print("Running initial scan...")
+scanner.scan()
+print("Found " .. #scanner.getItems() .. " items")
 print("Starting...")
 
 parallel.waitForAll(

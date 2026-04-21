@@ -105,13 +105,16 @@ function ws.loop()
             url = url .. "&role=cc"
         end
 
+        print("[ws] Connecting to " .. url)
         local ok, socket = pcall(http.websocket, url)
         if ok and socket then
             _socket = socket
             _connected = true
             backoff = 1
 
-            ws.sendInventory(_scanner.getItems())
+            local items = _scanner.getItems()
+            print("[ws] Connected, sending " .. #items .. " items")
+            ws.sendInventory(items)
             ws.sendStatus()
             ws.sendConfig()
 
@@ -126,6 +129,9 @@ function ws.loop()
             _connected = false
             _socket = nil
             pcall(socket.close)
+            print("[ws] Disconnected")
+        else
+            print("[ws] Connection failed, retrying in " .. math.min(backoff, 30) .. "s")
         end
 
         sleep(math.min(backoff, 30))
