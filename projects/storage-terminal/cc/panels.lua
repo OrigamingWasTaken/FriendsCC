@@ -210,10 +210,21 @@ function panels.loop()
         local panelConfig = _config.get("panels") or {}
 
         for monName, panelId in pairs(panelConfig) do
-            local ok, mon = pcall(peripheral.wrap, monName)
-            if ok and mon then
+            local mon = peripheral.wrap(monName)
+            if mon then
                 mon.setTextScale(0.5)
-                renderPanel(mon, panelId)
+                local ok, err = pcall(renderPanel, mon, panelId)
+                if not ok then
+                    pcall(function()
+                        mon.setBackgroundColor(colors.black)
+                        mon.setTextColor(colors.red)
+                        mon.clear()
+                        mon.setCursorPos(1, 1)
+                        mon.write("Panel error:")
+                        mon.setCursorPos(1, 2)
+                        mon.write(tostring(err):sub(1, 30))
+                    end)
+                end
             end
         end
 

@@ -81,10 +81,10 @@ local function handleMessage(raw)
         if msg.panels then
             _config.set("panels", msg.panels)
         end
-        if msg.outputInv then
+        if msg.outputInv and msg.outputInv ~= "" then
             _config.set("outputInv", msg.outputInv)
         end
-        if msg.scanInterval then
+        if msg.scanInterval and msg.scanInterval > 0 then
             _config.set("scanInterval", msg.scanInterval)
         end
         ws.sendConfig()
