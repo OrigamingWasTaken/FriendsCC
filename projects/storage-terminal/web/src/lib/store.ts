@@ -11,6 +11,7 @@ export const status = writable<SystemStatus>({
   totalItems: 0,
   uniqueTypes: 0,
   lastScanMs: 0,
+  monitors: [],
 });
 export const config = writable<Config>({
   panels: {},

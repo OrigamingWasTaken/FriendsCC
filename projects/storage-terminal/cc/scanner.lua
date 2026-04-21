@@ -233,6 +233,17 @@ function scanner.getActivity()
     return _activity
 end
 
+function scanner.getMonitors()
+    local monitors = {}
+    local names = peripheral.getNames()
+    for _, name in ipairs(names) do
+        if peripheral.hasType(name, "monitor") then
+            table.insert(monitors, name)
+        end
+    end
+    return monitors
+end
+
 function scanner.getStatus()
     return {
         connected = true,
@@ -242,6 +253,7 @@ function scanner.getStatus()
         totalItems = 0,
         uniqueTypes = #_items,
         lastScanMs = _lastScanMs,
+        monitors = scanner.getMonitors(),
     }
 end
 

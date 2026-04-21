@@ -27,6 +27,7 @@ export interface SystemStatus {
   totalItems: number;
   uniqueTypes: number;
   lastScanMs: number;
+  monitors?: string[];
 }
 
 export interface PanelConfig {

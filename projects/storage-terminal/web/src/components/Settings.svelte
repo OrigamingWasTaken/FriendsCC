@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { config } from "../lib/store";
+  import { config, status } from "../lib/store";
   import { send } from "../lib/ws";
 
   let { open = $bindable(false) }: { open: boolean } = $props();
@@ -16,14 +16,10 @@
     { value: "system_status", label: "System Status" },
   ];
 
-  function save() {
-    send({
-      type: "config_update",
-      outputInv,
-      scanInterval,
-      panels: $config.panels,
-    });
-    open = false;
+  const allMonitors = $derived($status.monitors ?? []);
+
+  function getPanelForMonitor(monitor: string): string {
+    return $config.panels[monitor] ?? "";
   }
 
   function setPanelType(monitor: string, panelType: string) {
@@ -36,6 +32,16 @@
       }
       return { ...c, panels };
     });
+  }
+
+  function save() {
+    send({
+      type: "config_update",
+      outputInv,
+      scanInterval,
+      panels: $config.panels,
+    });
+    open = false;
   }
 </script>
 
@@ -59,16 +65,20 @@
       </label>
 
       <h3>Monitor Panels</h3>
-      {#each Object.entries($config.panels) as [monitor, panel]}
-        <div class="panel-row">
-          <span class="monitor-name">{monitor}</span>
-          <select value={panel} onchange={(e) => setPanelType(monitor, (e.target as HTMLSelectElement).value)}>
-            {#each PANEL_TYPES as pt}
-              <option value={pt.value}>{pt.label}</option>
-            {/each}
-          </select>
-        </div>
-      {/each}
+      {#if allMonitors.length === 0}
+        <p class="no-monitors">No monitors detected</p>
+      {:else}
+        {#each allMonitors as monitor}
+          <div class="panel-row">
+            <span class="monitor-name">{monitor}</span>
+            <select value={getPanelForMonitor(monitor)} onchange={(e) => setPanelType(monitor, (e.target as HTMLSelectElement).value)}>
+              {#each PANEL_TYPES as pt}
+                <option value={pt.value}>{pt.label}</option>
+              {/each}
+            </select>
+          </div>
+        {/each}
+      {/if}
 
       <button class="btn save" onclick={save}>Save</button>
     </div>
@@ -137,6 +147,11 @@
     font-size: 0.85rem;
     color: #565f89;
     text-transform: uppercase;
+  }
+  .no-monitors {
+    font-size: 0.8rem;
+    color: #565f89;
+    font-style: italic;
   }
   .panel-row {
     display: flex;

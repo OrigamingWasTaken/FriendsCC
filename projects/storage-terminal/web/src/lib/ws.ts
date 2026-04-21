@@ -24,6 +24,7 @@ function handleMessage(msg: ServerMessage) {
         totalItems: msg.totalItems ?? 0,
         uniqueTypes: msg.uniqueTypes ?? 0,
         lastScanMs: msg.lastScanMs ?? 0,
+        monitors: msg.monitors ?? [],
       });
       if (msg.connected !== undefined) {
         connected.set(msg.connected);
