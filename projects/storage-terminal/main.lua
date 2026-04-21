@@ -173,7 +173,7 @@ local searchInput = searchFrame:addInput()
     :setSize(monW - 3, 1)
     :setBackground(colors.gray)
     :setForeground(colors.white)
-    :setDefaultText("Search...")
+    :setPlaceholder("Search...")
 
 -- ============================================================================
 -- Item list
@@ -248,7 +248,7 @@ local dialogInput = dialog:addInput()
     :setSize(dialogW - 2, 1)
     :setBackground(colors.lightGray)
     :setForeground(colors.black)
-    :setDefaultText("Amount...")
+    :setPlaceholder("Amount...")
 
 local dialogConfirm = dialog:addButton()
     :setPosition(2, 7)
@@ -280,7 +280,7 @@ local selectedItem = nil
 local itemWidgets = {}
 
 local function applyFilter()
-    local query = (searchInput:getValue() or ""):lower()
+    local query = (searchInput:getText() or ""):lower()
     if query == "" or query == "search..." then
         filteredItems = allItems
     else
@@ -327,7 +327,7 @@ local function renderList()
                 selectedItem = item
                 dialogTitle:setText(" " .. item.displayName:sub(1, dialogW - 2))
                 dialogInfo:setText("Available: " .. formatCount(item.count))
-                dialogInput:setValue("")
+                dialogInput:setText("")
                 dialogBg:setVisible(true)
             end)
 
@@ -398,7 +398,7 @@ local function doExtract(amount)
 end
 
 dialogConfirm:onClick(function()
-    doExtract(tonumber(dialogInput:getValue()))
+    doExtract(tonumber(dialogInput:getText()))
 end)
 
 dialogAll:onClick(function()
