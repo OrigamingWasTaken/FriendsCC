@@ -324,7 +324,7 @@ local function renderList()
             :setForeground(getItemColor(item.name))
             :setText(nameText)
 
-        btn:onOnClick(function()
+        btn:onClick(function()
             selectedItem = item
             dialogTitle:setText(" " .. item.displayName:sub(1, dialogW - 2))
             dialogInfo:setText("Available: " .. formatCount(item.count))
@@ -375,14 +375,14 @@ searchInput:onChange("text", function(self, value)
     renderList()
 end)
 
-prevBtn:onOnClick(function()
+prevBtn:onClick(function()
     if currentPage > 1 then
         currentPage = currentPage - 1
         renderList()
     end
 end)
 
-nextBtn:onOnClick(function()
+nextBtn:onClick(function()
     if currentPage < totalPages then
         currentPage = currentPage + 1
         renderList()
@@ -399,17 +399,17 @@ local function doExtract(amount)
     refresh()
 end
 
-dialogConfirm:onOnClick(function()
+dialogConfirm:onClick(function()
     doExtract(tonumber(dialogInput:getText()))
 end)
 
-dialogAll:onOnClick(function()
+dialogAll:onClick(function()
     if selectedItem then
         doExtract(selectedItem.count)
     end
 end)
 
-dialogCancel:onOnClick(function()
+dialogCancel:onClick(function()
     dialogBg:setVisible(false)
     dialogOpen = false
     selectedItem = nil
