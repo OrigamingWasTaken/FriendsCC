@@ -1,23 +1,25 @@
-# storage-terminal
+# Storage Terminal v2
 
-Monitor-based storage terminal for Create item networks
+Full-featured storage management for Create item vaults. Web UI for browsing/extraction, monitors for dashboard panels, WebSocket relay connecting them.
 
-## Addons
-@types/basalt/basalt.lua
+## Architecture
 
-## Libs
-@lib/log.lua
+CC Computer (Lua) → WebSocket → Bun Relay → WebSocket → Svelte Browser
 
-## Hardware
-- Advanced Computer connected via wired modem network
-- 4x3 advanced monitor (touch input, colors)
-- Create storage blocks (vaults, chests, barrels) on the same wired network
-- An output inventory (chest/barrel) adjacent to the computer or on the network for item extraction
+## CC:Tweaked Files (deployed to computer)
 
-## CC:Tweaked Inventory Peripheral Methods
-All inventory blocks expose these generic methods when wrapped:
-- `list()` → table of `{name: string, count: number, nbt?: string}` keyed by slot number
-- `getItemDetail(slot)` → detailed item info including displayName, maxCount, tags
+All files in cc/ are deployed to the computer root. Load siblings with dofile:
+```lua
+local config = dofile("/config.lua")
+local draw = dofile("/draw.lua")
+```
+
+## Inventory Peripheral Methods
+- `list()` → table of `{name: string, count: number, nbt?: string}` keyed by slot
+- `getItemDetail(slot)` → `{displayName, name, count, maxCount, enchantments?, damage?, maxDamage?, tags?}`
 - `size()` → number of slots
-- `pushItems(toName, fromSlot, limit?, toSlot?)` → number of items transferred
-- `pullItems(fromName, fromSlot, limit?, toSlot?)` → number of items transferred
+- `pushItems(toName, fromSlot, limit?, toSlot?)` → number transferred
+- `pullItems(fromName, fromSlot, limit?, toSlot?)` → number transferred
+
+## Item Key Format
+`name .. "|" .. (nbt or "")` — uniquely identifies items including enchantments and renames.

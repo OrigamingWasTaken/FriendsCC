@@ -1,0 +1,12 @@
+{
+  "name": "storage-terminal-relay",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun run --watch index.ts",
+    "start": "bun run index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
