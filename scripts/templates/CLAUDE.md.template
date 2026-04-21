@@ -1,0 +1,12 @@
+# {{PROJECT_NAME}}
+
+{{DESCRIPTION}}
+
+## Addons
+{{ADDON_REFS}}
+
+## Libs
+{{LIB_REFS}}
+
+## Notes
+<!-- Add project-specific context: hardware layout, computer IDs, network protocols -->

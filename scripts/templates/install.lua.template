@@ -1,0 +1,21 @@
+local repo = "{{REPO_RAW}}"
+
+local files = {
+{{FILE_LIST}}
+}
+
+for _, f in ipairs(files) do
+    local dir = fs.getDir(f.path)
+    if dir ~= "" and not fs.exists(dir) then
+        fs.makeDir(dir)
+    end
+    if fs.exists(f.path) then
+        fs.delete(f.path)
+    end
+    print("Downloading " .. f.path)
+    shell.run("wget", repo .. "/" .. f.remote, f.path)
+end
+
+{{BASALT_INSTALL}}
+
+print("Done! Run 'reboot' to start.")

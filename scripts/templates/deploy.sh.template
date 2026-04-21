@@ -1,0 +1,9 @@
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../../scripts/config.sh"
+
+echo "-- Paste these commands into the CC:Tweaked computer:"
+echo ""
+{{WGET_COMMANDS}}
+echo ""
+echo "-- Then reboot the computer."
