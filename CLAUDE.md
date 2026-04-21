@@ -37,8 +37,9 @@ CC:Tweaked runs **Lua 5.1**. Key constraints:
 - Use `local` for all variables and functions.
 - Prefer `require()` over the deprecated `os.loadAPI()`.
 - Use `cc.expect` for argument validation in library code: `local expect = require("cc.expect").expect`
-- Shared libs live in `lib/`. Projects extend `package.path` in their `startup.lua`.
+- Shared libs live in `lib/`. Load them with `dofile("/lib/foo.lua")`, NOT `require` — CC:T's `require` doesn't reliably find custom paths.
 - For UI, use Basalt 2 (`local basalt = require("basalt")`). Always end Basalt programs with `basalt.run()`.
+- Basalt 2 API: use `getVisible` not `isVisible`, `getText`/`setText` not `getValue`/`setValue`, `setPlaceholder` not `setDefaultText`. Use `basalt.schedule(fn)` for background tasks — `autoUpdate` does not exist. Always check `types/basalt/basalt.lua` for correct method names.
 - Programs are deployed via HTTP/wget. Entrypoint is always `startup.lua` which sets `package.path` and runs `main.lua`.
 
 ## Type Stubs (always loaded)
