@@ -6,7 +6,7 @@ log.init("/storage-terminal.log")
 -- Config: change these to match your setup
 local OUTPUT_INV = "minecraft:chest_0"
 local SCAN_INTERVAL = 5
-local ITEMS_PER_PAGE = 0 -- calculated from monitor size
+local ITEMS_PER_PAGE = 0
 
 -- State
 local allItems = {}
@@ -144,7 +144,6 @@ main:addLabel()
     :setForeground(colors.white)
     :setText(" Storage Terminal")
 
--- Item count badge
 local countBadge = main:addLabel()
     :setPosition(monW - 12, 1)
     :setSize(13, 1)
@@ -185,7 +184,7 @@ local listFrame = main:addFrame()
     :setBackground(colors.black)
 
 -- ============================================================================
--- Footer with page nav
+-- Footer
 -- ============================================================================
 
 local footerInfo = main:addLabel()
@@ -272,6 +271,7 @@ local dialogCancel = dialog:addButton()
     :setText("X")
 
 local selectedItem = nil
+local dialogOpen = false
 
 -- ============================================================================
 -- Rendering
@@ -281,7 +281,7 @@ local itemWidgets = {}
 
 local function applyFilter()
     local query = (searchInput:getText() or ""):lower()
-    if query == "" or query == "search..." then
+    if query == "" then
         filteredItems = allItems
     else
         filteredItems = {}
@@ -298,7 +298,7 @@ end
 
 local function renderList()
     for _, w in ipairs(itemWidgets) do
-        w:remove()
+        w:destroy()
     end
     itemWidgets = {}
 
@@ -323,13 +323,15 @@ local function renderList()
             :setBackground(rowBg)
             :setForeground(getItemColor(item.name))
             :setText(nameText)
-            :onClick(function()
-                selectedItem = item
-                dialogTitle:setText(" " .. item.displayName:sub(1, dialogW - 2))
-                dialogInfo:setText("Available: " .. formatCount(item.count))
-                dialogInput:setText("")
-                dialogBg:setVisible(true)
-            end)
+
+        btn:onOnClick(function()
+            selectedItem = item
+            dialogTitle:setText(" " .. item.displayName:sub(1, dialogW - 2))
+            dialogInfo:setText("Available: " .. formatCount(item.count))
+            dialogInput:setText("")
+            dialogBg:setVisible(true)
+            dialogOpen = true
+        end)
 
         local countLbl = listFrame:addLabel()
             :setPosition(nameW + 1, row)
@@ -342,7 +344,6 @@ local function renderList()
         table.insert(itemWidgets, countLbl)
     end
 
-    -- Empty rows
     for row = endIdx - startIdx + 2, ITEMS_PER_PAGE do
         local lbl = listFrame:addLabel()
             :setPosition(1, row)
@@ -368,20 +369,20 @@ end
 -- Event handlers
 -- ============================================================================
 
-searchInput:onChange(function()
+searchInput:onChange("text", function(self, value)
     currentPage = 1
     applyFilter()
     renderList()
 end)
 
-prevBtn:onClick(function()
+prevBtn:onOnClick(function()
     if currentPage > 1 then
         currentPage = currentPage - 1
         renderList()
     end
 end)
 
-nextBtn:onClick(function()
+nextBtn:onOnClick(function()
     if currentPage < totalPages then
         currentPage = currentPage + 1
         renderList()
@@ -393,22 +394,24 @@ local function doExtract(amount)
     amount = math.min(math.floor(amount), selectedItem.count)
     extractItems(selectedItem, amount)
     dialogBg:setVisible(false)
+    dialogOpen = false
     selectedItem = nil
     refresh()
 end
 
-dialogConfirm:onClick(function()
+dialogConfirm:onOnClick(function()
     doExtract(tonumber(dialogInput:getText()))
 end)
 
-dialogAll:onClick(function()
+dialogAll:onOnClick(function()
     if selectedItem then
         doExtract(selectedItem.count)
     end
 end)
 
-dialogCancel:onClick(function()
+dialogCancel:onOnClick(function()
     dialogBg:setVisible(false)
+    dialogOpen = false
     selectedItem = nil
 end)
 
@@ -421,7 +424,7 @@ refresh()
 basalt.schedule(function()
     while true do
         sleep(SCAN_INTERVAL)
-        if not dialogBg:getVisible() then
+        if not dialogOpen then
             refresh()
         end
     end
