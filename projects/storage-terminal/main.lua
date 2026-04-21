@@ -421,7 +421,7 @@ refresh()
 basalt.schedule(function()
     while true do
         sleep(SCAN_INTERVAL)
-        if not dialogBg:isVisible() then
+        if not dialogBg:getVisible() then
             refresh()
         end
     end
