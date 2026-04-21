@@ -15,3 +15,8 @@ log/
 
 # Build artifacts
 *.out
+
+# Node/Bun
+node_modules/
+dist/
+bun.lock
