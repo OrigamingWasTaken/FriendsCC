@@ -66,19 +66,19 @@ fi
 
 if [[ "${USE_NET,,}" == "y" ]]; then
     LIB_REFS+=$'@lib/net.lua\n'
-    REQUIRES+=$'local net = require("net")\n'
+    REQUIRES+=$'local net = dofile("/lib/net.lua")\n'
     FILE_LIST+="    {remote = \"lib/net.lua\", path = \"/lib/net.lua\"},"$'\n'
     WGET_COMMANDS+="echo \"wget \$REPO_RAW/lib/net.lua /lib/net.lua\""$'\n'
 fi
 if [[ "${USE_EVENT,,}" == "y" ]]; then
     LIB_REFS+=$'@lib/event.lua\n'
-    REQUIRES+=$'local event = require("event")\n'
+    REQUIRES+=$'local event = dofile("/lib/event.lua")\n'
     FILE_LIST+="    {remote = \"lib/event.lua\", path = \"/lib/event.lua\"},"$'\n'
     WGET_COMMANDS+="echo \"wget \$REPO_RAW/lib/event.lua /lib/event.lua\""$'\n'
 fi
 if [[ "${USE_LOG,,}" == "y" ]]; then
     LIB_REFS+=$'@lib/log.lua\n'
-    REQUIRES+=$'local log = require("log")\n'
+    REQUIRES+=$'local log = dofile("/lib/log.lua")\n'
     FILE_LIST+="    {remote = \"lib/log.lua\", path = \"/lib/log.lua\"},"$'\n'
     WGET_COMMANDS+="echo \"wget \$REPO_RAW/lib/log.lua /lib/log.lua\""$'\n'
 fi
