@@ -13,6 +13,7 @@ local allItems = {}
 local filteredItems = {}
 local currentPage = 1
 local totalPages = 1
+local waitingForInput = false
 
 local CATEGORY_COLORS = {
     ["minecraft:"] = colors.white,
@@ -116,6 +117,55 @@ local function extractItems(item, amount)
 end
 
 -- ============================================================================
+-- Computer terminal helpers (keyboard input on the computer screen)
+-- ============================================================================
+
+local function termClear()
+    term.setBackgroundColor(colors.black)
+    term.setTextColor(colors.white)
+    term.clear()
+    term.setCursorPos(1, 1)
+end
+
+local function termStatus(msg)
+    termClear()
+    term.setTextColor(colors.lightBlue)
+    print("=== Storage Terminal ===")
+    print()
+    term.setTextColor(colors.white)
+    print(msg)
+end
+
+local function termPromptAmount(item)
+    termClear()
+    term.setTextColor(colors.lightBlue)
+    print("=== Storage Terminal ===")
+    print()
+    term.setTextColor(colors.yellow)
+    print(item.displayName)
+    term.setTextColor(colors.lightGray)
+    print("Available: " .. formatCount(item.count))
+    print()
+    term.setTextColor(colors.white)
+    write("Amount (or 'all'): ")
+    local input = read()
+    if input == "all" then
+        return item.count
+    end
+    return tonumber(input)
+end
+
+local function termPromptSearch()
+    termClear()
+    term.setTextColor(colors.lightBlue)
+    print("=== Storage Terminal ===")
+    print()
+    term.setTextColor(colors.white)
+    write("Search (empty = clear): ")
+    return read()
+end
+
+-- ============================================================================
 -- Find monitor
 -- ============================================================================
 
@@ -131,7 +181,7 @@ main:setTerm(mon)
 main:setBackground(colors.black)
 
 local monW, monH = mon.getSize()
-ITEMS_PER_PAGE = monH - 4
+ITEMS_PER_PAGE = monH - 3
 
 -- ============================================================================
 -- Header
@@ -151,28 +201,13 @@ local countBadge = main:addLabel()
     :setForeground(colors.lightBlue)
     :setText("")
 
--- ============================================================================
--- Search bar
--- ============================================================================
-
-local searchFrame = main:addFrame()
+-- Search button (tapping opens search prompt on computer terminal)
+local searchBtn = main:addButton()
     :setPosition(1, 2)
     :setSize(monW, 1)
     :setBackground(colors.gray)
-
-searchFrame:addLabel()
-    :setPosition(1, 1)
-    :setSize(3, 1)
-    :setBackground(colors.gray)
     :setForeground(colors.lightGray)
-    :setText(" > ")
-
-local searchInput = searchFrame:addInput()
-    :setPosition(4, 1)
-    :setSize(monW - 3, 1)
-    :setBackground(colors.gray)
-    :setForeground(colors.white)
-    :setPlaceholder("Search...")
+    :setText(" > Tap to search...")
 
 -- ============================================================================
 -- Item list
@@ -209,78 +244,14 @@ local nextBtn = main:addButton()
     :setText(" > ")
 
 -- ============================================================================
--- Extraction dialog
--- ============================================================================
-
-local dialogBg = main:addFrame()
-    :setPosition(1, 1)
-    :setSize(monW, monH)
-    :setBackground(colors.black)
-    :setVisible(false)
-
-local dialogW = math.min(32, monW - 4)
-local dialogH = 7
-local dialogX = math.floor((monW - dialogW) / 2) + 1
-local dialogY = math.floor((monH - dialogH) / 2) + 1
-
-local dialog = dialogBg:addFrame()
-    :setPosition(dialogX, dialogY)
-    :setSize(dialogW, dialogH)
-    :setBackground(colors.gray)
-
-local dialogTitle = dialog:addLabel()
-    :setPosition(1, 1)
-    :setSize(dialogW, 1)
-    :setBackground(colors.purple)
-    :setForeground(colors.white)
-    :setText("")
-
-local dialogInfo = dialog:addLabel()
-    :setPosition(2, 3)
-    :setSize(dialogW - 2, 1)
-    :setForeground(colors.lightGray)
-    :setBackground(colors.gray)
-    :setText("")
-
-local dialogInput = dialog:addInput()
-    :setPosition(2, 5)
-    :setSize(dialogW - 2, 1)
-    :setBackground(colors.lightGray)
-    :setForeground(colors.black)
-    :setPlaceholder("Amount...")
-
-local dialogConfirm = dialog:addButton()
-    :setPosition(2, 7)
-    :setSize(math.floor(dialogW / 2) - 2, 1)
-    :setBackground(colors.green)
-    :setForeground(colors.white)
-    :setText("Take")
-
-local dialogAll = dialog:addButton()
-    :setPosition(math.floor(dialogW / 2) + 1, 7)
-    :setSize(math.floor(dialogW / 4), 1)
-    :setBackground(colors.orange)
-    :setForeground(colors.white)
-    :setText("All")
-
-local dialogCancel = dialog:addButton()
-    :setPosition(dialogW - math.floor(dialogW / 4), 7)
-    :setSize(math.floor(dialogW / 4) + 1, 1)
-    :setBackground(colors.red)
-    :setForeground(colors.white)
-    :setText("X")
-
-local selectedItem = nil
-local dialogOpen = false
-
--- ============================================================================
 -- Rendering
 -- ============================================================================
 
 local itemWidgets = {}
+local searchQuery = ""
 
 local function applyFilter()
-    local query = (searchInput:getText() or ""):lower()
+    local query = searchQuery:lower()
     if query == "" then
         filteredItems = allItems
     else
@@ -325,12 +296,18 @@ local function renderList()
             :setText(nameText)
 
         btn:onClick(function()
-            selectedItem = item
-            dialogTitle:setText(" " .. item.displayName:sub(1, dialogW - 2))
-            dialogInfo:setText("Available: " .. formatCount(item.count))
-            dialogInput:setText("")
-            dialogBg:setVisible(true)
-            dialogOpen = true
+            if waitingForInput then return end
+            waitingForInput = true
+            basalt.schedule(function()
+                local amount = termPromptAmount(item)
+                if amount and amount > 0 then
+                    amount = math.min(math.floor(amount), item.count)
+                    extractItems(item, amount)
+                    refresh()
+                end
+                termStatus("Tap items on the monitor.")
+                waitingForInput = false
+            end)
         end)
 
         local countLbl = listFrame:addLabel()
@@ -355,6 +332,14 @@ local function renderList()
 
     footerInfo:setText(string.format(" Pg %d/%d  %d items", currentPage, totalPages, #filteredItems))
     countBadge:setText(string.format("%d types ", #allItems))
+
+    if searchQuery ~= "" then
+        searchBtn:setText(" > " .. searchQuery .. "  [tap to clear]")
+        searchBtn:setForeground(colors.white)
+    else
+        searchBtn:setText(" > Tap to search...")
+        searchBtn:setForeground(colors.lightGray)
+    end
 end
 
 local function refresh()
@@ -369,10 +354,18 @@ end
 -- Event handlers
 -- ============================================================================
 
-searchInput:onChange("text", function(self, value)
-    currentPage = 1
-    applyFilter()
-    renderList()
+searchBtn:onClick(function()
+    if waitingForInput then return end
+    waitingForInput = true
+    basalt.schedule(function()
+        local query = termPromptSearch()
+        searchQuery = query or ""
+        currentPage = 1
+        applyFilter()
+        renderList()
+        termStatus("Tap items on the monitor.")
+        waitingForInput = false
+    end)
 end)
 
 prevBtn:onClick(function()
@@ -389,42 +382,17 @@ nextBtn:onClick(function()
     end
 end)
 
-local function doExtract(amount)
-    if not selectedItem or not amount or amount <= 0 then return end
-    amount = math.min(math.floor(amount), selectedItem.count)
-    extractItems(selectedItem, amount)
-    dialogBg:setVisible(false)
-    dialogOpen = false
-    selectedItem = nil
-    refresh()
-end
-
-dialogConfirm:onClick(function()
-    doExtract(tonumber(dialogInput:getText()))
-end)
-
-dialogAll:onClick(function()
-    if selectedItem then
-        doExtract(selectedItem.count)
-    end
-end)
-
-dialogCancel:onClick(function()
-    dialogBg:setVisible(false)
-    dialogOpen = false
-    selectedItem = nil
-end)
-
 -- ============================================================================
 -- Main
 -- ============================================================================
 
+termStatus("Tap items on the monitor.")
 refresh()
 
 basalt.schedule(function()
     while true do
         sleep(SCAN_INTERVAL)
-        if not dialogOpen then
+        if not waitingForInput then
             refresh()
         end
     end
