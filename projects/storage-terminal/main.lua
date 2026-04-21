@@ -418,7 +418,7 @@ end)
 
 refresh()
 
-basalt.autoUpdate(function()
+basalt.schedule(function()
     while true do
         sleep(SCAN_INTERVAL)
         if not dialogBg:isVisible() then
@@ -426,3 +426,5 @@ basalt.autoUpdate(function()
         end
     end
 end)
+
+basalt.run()
