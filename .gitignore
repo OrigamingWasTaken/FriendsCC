@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# LuaLS
+.luarc.json.bak
+log/
+
+# Build artifacts
+*.out
