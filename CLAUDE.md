@@ -39,7 +39,12 @@ CC:Tweaked runs **Lua 5.1**. Key constraints:
 - Use `cc.expect` for argument validation in library code: `local expect = require("cc.expect").expect`
 - Shared libs live in `lib/`. Load them with `dofile("/lib/foo.lua")`, NOT `require` — CC:T's `require` doesn't reliably find custom paths.
 - For UI, use Basalt 2 (`local basalt = require("basalt")`). Always end Basalt programs with `basalt.run()`.
-- Basalt 2 API: use `getVisible` not `isVisible`, `getText`/`setText` not `getValue`/`setValue`, `setPlaceholder` not `setDefaultText`. Use `basalt.schedule(fn)` for background tasks — `autoUpdate` does not exist. Always check `types/basalt/basalt.lua` for correct method names.
+- Basalt 2 API gotchas:
+  - Event callbacks: `onClick`, `onDrag`, `onScroll`, `onKey`, `onChar`, `onEnter`, `onLeave`, `onFocus`, `onBlur` (single "on" prefix). WARNING: BasaltLS.lua stubs incorrectly say `onOnClick` etc — that's a bug in the annotation generator.
+  - Properties: `setText`/`getText`, `setVisible`/`getVisible`, `setPlaceholder` (not `setDefaultText`, not `setValue`/`getValue`).
+  - `onChange("propertyName", callback)` — takes property name as first arg.
+  - `basalt.schedule(fn)` for background tasks — `autoUpdate` does not exist.
+  - `element:destroy()` to remove elements — `remove()` does not exist.
 - Programs are deployed via HTTP/wget. Entrypoint is always `startup.lua` which sets `package.path` and runs `main.lua`.
 
 ## Type Stubs (always loaded)
